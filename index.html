@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Productos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <!--imagenes-->
+        <div class="d-none d-lg-block position-fixed start-0 top-50 translate-middle-y p-3" style="width: 300px; z-index: 1000;">
+            <img src="https://i.pinimg.com/736x/4f/4b/c9/4f4bc993ed1cc3257c7c4b627dd7e2bc.jpg" 
+                 alt="libro" class="img-fluid rounded shadow mb-3">
+            <img src="https://i.pinimg.com/736x/21/0d/84/210d844199a647c808b011802a99da8f.jpg" 
+                 alt="reloj" class="img-fluid rounded shadow mb-3">
+            <img src="https://i.pinimg.com/736x/38/93/19/3893198952a9254071084ba52feb2068.jpg" 
+                 alt="casa" class="img-fluid rounded shadow mb-3">
+        </div>
+        <div class="d-none d-lg-block position-fixed end-0 top-50 translate-middle-y p-3" style="width: 300px; z-index: 1000;">
+            <img src="https://i.pinimg.com/736x/24/eb/36/24eb3605c960bfca102a5436b6701673.jpg" 
+                 alt="ropa" class="img-fluid rounded shadow mb-3">
+            <img src="https://i.pinimg.com/736x/ed/bb/1a/edbb1a5c124ad04b3a7e601fad760630.jpg" 
+                 alt="limpieza" class="img-fluid rounded shadow mb-3">
+            <img src="https://i.pinimg.com/736x/bb/80/a2/bb80a2de93b993c460f41a2928b6405c.jpg" 
+                 alt="tecnologia" class="img-fluid rounded shadow mb-3">
+        </div>
+
+    <div class="container mt-5">
+        <h1 class="mb-4 text text-center">Gestión de Productos</h1>
+        <!-- Formulario para agregar productos -->
+        <div class="card mb-3 bg-primary-subtle">
+            <div class="card-body">
+                <h5 class="card-title">Agregar Nuevo Producto</h5>
+                <div class="mb-3">
+                    <label for="nombreProducto" class="form-label">Nombre del Producto</label>
+                    <input type="text" class="form-control" id="nombreProducto" required>
+                </div>
+                <div class="mb-3">
+                    <label for="precioProducto" class="form-label">Precio</label>
+                    <input type="number" class="form-control" id="precioProducto" min="0" step="0.01" required>
+                </div>
+                <div class="mb-3">
+                    <label for="categoriaProducto" class="form-label">Categoria</label>
+                    <select class="form-select" id="categoriaProducto" required>
+                        <option value="" selected disabled>Seleccione una categoria</option>
+                        <option value="Electrónica">Electronica</option>
+                        <option value="Ropa">Ropa</option>
+                        <option value="Libros">Libros</option>
+                        <option value="Hogar">Hogar</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+                <button id="agregarProductoBtn" class="btn btn-primary">Agregar Producto</button>
+            </div>
+        </div>
+        
+        <!-- Filtro de productos -->
+        <div class="mb-3">
+            <label for="filtroCategoria" class="form-label">Filtrar por categoría:</label>
+            <select class="form-select" id="filtroCategoria">
+                <option value="Todos">Todos</option>
+                <option value="Electrónica">Electrónica</option>
+                <option value="Ropa">Ropa</option>
+                <option value="Libros">Libros</option>
+                <option value="Hogar">Hogar</option>
+                <option value="Otros">Otros</option>
+            </select>
+        </div>
+        
+        <!-- Lista de productos -->
+        <h2 class="mt-4">Lista de Productos</h2>
+        <ul id="listaProductos" class="list-group"></ul>
+        
+        <!-- Detalles del producto -->
+        <div id="detallesProducto" class="d-none mt-4 card">
+            <div class="card-body">
+                <h5 class="card-title">Detalles del Producto</h5>
+                <div>
+                    <p id="detalleNombre"></p>
+                    <p id="detallePrecio"></p>
+                    <p id="detalleCategoria"></p>
+                </div>
+                <button id="cerrarDetalles" class="btn btn-secondary btn-sm">Cerrar Detalles</button>
+            </div>
+        </div>
+    </div>
+        <!--mi js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Clase Producto
+        class Producto {
+            constructor(nombre, precio, categoria) {
+                this.id = Date.now();
+                this.nombre = nombre;
+                this.precio = parseFloat(precio);
+                this.categoria = categoria;
+            }
+        }
+        
+        // Array para almacenar productos
+        let productos = [];
+        
+        // Referencias a elementos del DOM
+        const nombreProductoInput = document.getElementById('nombreProducto');
+        const precioProductoInput = document.getElementById('precioProducto');
+        const categoriaProductoSelect = document.getElementById('categoriaProducto');
+        const agregarProductoBtn = document.getElementById('agregarProductoBtn');
+        const filtroCategoriaSelect = document.getElementById('filtroCategoria');
+        const listaProductosUl = document.getElementById('listaProductos');
+        const detallesProductoDiv = document.getElementById('detallesProducto');
+        const detalleNombreP = document.getElementById('detalleNombre');
+        const detallePrecioP = document.getElementById('detallePrecio');
+        const detalleCategoriaP = document.getElementById('detalleCategoria');
+        const cerrarDetallesBtn = document.getElementById('cerrarDetalles');
+        
+        // Funcion para agregar producto
+        function agregarProducto() {
+            const nombre = nombreProductoInput.value.trim();
+            const precio = precioProductoInput.value;
+            const categoria = categoriaProductoSelect.value;
+            
+            // Validacion
+            if (!nombre || isNaN(precio) || precio <= 0 || !categoria) {
+                alert('Por favor complete todos los campos correctamente');
+                return;
+            }
+            
+            // Crear y agregar producto
+            const nuevoProducto = new Producto(nombre, precio, categoria);
+            productos.push(nuevoProducto);
+            
+            // Renderizar y limpiar formulario
+            renderizarProductos(productos);
+            nombreProductoInput.value = '';
+            precioProductoInput.value = '';
+            categoriaProductoSelect.value = '';
+        }
+        
+        // Función para eliminar producto
+        function eliminarProducto(id) {
+            productos = productos.filter(producto => producto.id !== id);
+            renderizarProductos(productos);
+            detallesProductoDiv.classList.add('d-none');
+        }
+        
+        // Función para mostrar detalles del producto
+        function mostrarDetallesProducto(id) {
+            const producto = productos.find(p => p.id == id);
+            if (producto) {
+                detalleNombreP.textContent = "Nombre: "+ producto.nombre;
+                detallePrecioP.textContent = "Precio: s/. " + producto.precio.toFixed(2);
+                detalleCategoriaP.textContent = "Categoria: " + producto.categoria;
+                detallesProductoDiv.classList.remove('d-none');
+            }
+        }
+        
+        // Función para renderizar productos
+        function renderizarProductos(lista) {
+            listaProductosUl.innerHTML = '';
+            
+            lista.forEach(producto => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = `
+                    <div>
+                        <strong>${producto.nombre}</strong> - ${producto.categoria}
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-info me-2" data-id="${producto.id}">Detalles</button>
+                        <button class="btn btn-danger" data-id="${producto.id}">Eliminar</button>
+                    </div>
+                `;
+                
+                listaProductosUl.appendChild(li);
+            });
+            
+            // Agregar event listeners a los botones dinámicos
+            document.querySelectorAll('.btn-info').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    mostrarDetallesProducto(id);
+                });
+            });
+            
+            document.querySelectorAll('.btn-danger').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    eliminarProducto(id);
+                });
+            });
+        }
+        
+        // Event Listeners
+        agregarProductoBtn.addEventListener('click', agregarProducto);
+        
+        filtroCategoriaSelect.addEventListener('change', () => {
+            const categoria = filtroCategoriaSelect.value;
+            if (categoria == 'Todos') {
+                renderizarProductos(productos);
+            } else {
+                const productosFiltrados = productos.filter(p => p.categoria == categoria);
+                renderizarProductos(productosFiltrados);
+            }
+            detallesProductoDiv.classList.add('d-none');
+        });
+        
+        cerrarDetallesBtn.addEventListener('click', () => {
+            detallesProductoDiv.classList.add('d-none');
+        });
+        
+        renderizarProductos(productos);
+    </script>
+</body>
+</html>
